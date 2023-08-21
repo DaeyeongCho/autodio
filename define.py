@@ -7,6 +7,13 @@ BUTTON_ADD = "추가"
 BUTTON_DELETE = "삭제"
 BUTTON_RELOAD = "새로고침"
 
+LABEL_RECORD_TITLE = ["번호", "파일명", "파일 경로", "볼륨", "요일", "시간", "재생", "수정"]
+LABEL_RECORD_TITLE_WIDTH = [10, 50, 100, 10, 20, 30, 10, 10]
+
+
+
+
+
 
 
 ## toplevelAdd ##
@@ -16,6 +23,10 @@ BUTTON_OPEN_FILE = "파일 열기"
 
 LABEL_FILE_PATH = "파일 경로: "
 LABEL_FILE_NAME = "파일명: "
+
+LABEL_VOLUME = "볼륨: "
+BUTTON_PLAY = "재생"
+BUTTON_STOP = "정지"
 
 LABEL_WEEK = "요일: "
 CHECKBUTTON_MON = "월"
