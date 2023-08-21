@@ -30,8 +30,12 @@ def main():
 
         # X버튼 클릭 시
         def exitWindowX():
-            if pygame.mixer.music.get_busy():
-                play.stop()
+            if toplevelPlay == None:
+                toplevelAdd.destroy()
+                return
+
+            if toplevelPlay.get_num_channels() > 0:
+                toplevelPlay.stop()
             toplevelAdd.destroy()
 
         ## ===== toplevelAdd 프로그램 ===== ##
@@ -89,39 +93,37 @@ def main():
 
             addButtonPlay.configure(state="disable")
             addButtonAdd.configure(state="disable")
-            if pygame.mixer.music.get_busy():
-                play.stop()
+            if toplevelPlay.get_num_channels() > 0:
+                toplevelPlay.stop()
             toplevelAdd.destroy()
-
-        볼륨 조절 기능 수정할 것
-        def setVolumeFunc():
-            global play
-            addVolumeSize = intVarAddScaleVolume.get() * 0.01
-            
-            if pygame.mixer.music.get_busy():
-                play.set
 
 
         def addPlayAudioFunc():
-            global play
+            global toplevelPlay
             addFilePath = strVarAddLabelFilePath.get()
             addVolumeSize = intVarAddScaleVolume.get() * 0.01
 
-            play = pygame.mixer.Sound(addFilePath)
-            play.set_volume(addVolumeSize)
-            play.play()
+            toplevelPlay = pygame.mixer.Sound(addFilePath)
+            toplevelPlay.set_volume(addVolumeSize)
+            toplevelPlay.play()
 
             addButtonPlay.configure(text=BUTTON_STOP, command=addStopAudioFunc)
 
 
         def addStopAudioFunc():
-            global play
+            global toplevelPlay
 
-            play.stop()
+            toplevelPlay.stop()
             addButtonPlay.configure(text=BUTTON_PLAY, command=addPlayAudioFunc)
 
         toplevelAdd.protocol('WM_DELETE_WINDOW', exitWindowX)
 
+
+        def setVolumeFunc(addVolumeSizeStr):
+            addVolumeSize = float(addVolumeSizeStr) / 100
+            
+            if toplevelPlay.get_num_channels() > 0:
+                toplevelPlay.set_volume(addVolumeSize)
 
 
         ## ===== toplevelAdd 정의 ===== ##
@@ -170,7 +172,7 @@ def main():
         addButtonOpenFile = Button(addFrameFileAdd, text=BUTTON_OPEN_FILE, command=addFileOpenfunc)
 
         addLabelVolume = Label(addFrameVolume, text=LABEL_VOLUME)
-        addScaleVolume = Scale(addFrameVolume, from_=0, to=100, variable=intVarAddScaleVolume, command=setVolumeFunc())
+        addScaleVolume = Scale(addFrameVolume, from_=0, to=100, variable=intVarAddScaleVolume, command=setVolumeFunc)
         addButtonPlay = Button(addFrameVolume, text=BUTTON_PLAY, state="disable", command=addPlayAudioFunc)
 
         addLabelWeek = Label(addFrameWeek, text=LABEL_WEEK)
@@ -227,40 +229,74 @@ def main():
 
 ## ============================================ 프로그램 ============================================ ##
 
-    데이터베이스에서 가져와 출력하는 기능 만들 것
+    # 데이터베이스에서 가져와 출력하는 기능 만들 것
     def loadRecordsFunc():
+        number = 0
+        weeks = ""
+        connect = sqlite3.connect("audiolist.db")
+        cursor = connect.cursor()
+        
+        cursor.execute('SELECT * from audiolisttable')
+        for rows in cursor:
+            number += 1
+            weeks = ""
+            if rows[4] == 1:
+                weeks += "월, "
+            if rows[5] == 1:
+                weeks += "화, "
+            if rows[6] == 1:
+                weeks += "수, "
+            if rows[7] == 1:
+                weeks += "목, "
+            if rows[8] == 1:
+                weeks += "금, "
+            
+            tempFrame = Frame(frameRecords)
+            tempFrame.pack(side=TOP)
+            temp = Label(tempFrame, text=str(number), width=LABEL_RECORD_TITLE_WIDTH[0], anchor="center")
+            temp.grid(row=0, column=0)
+            temp = Label(tempFrame, text=rows[2], width=LABEL_RECORD_TITLE_WIDTH[1], anchor="center")
+            temp.grid(row=0, column=1)
+            temp = Label(tempFrame, text=rows[1], width=LABEL_RECORD_TITLE_WIDTH[2], anchor="center")
+            temp.grid(row=0, column=2)
+            temp = Label(tempFrame, text=str(rows[3]), width=LABEL_RECORD_TITLE_WIDTH[3], anchor="center")
+            temp.grid(row=0, column=3)
+            temp = Label(tempFrame, text=weeks, width=LABEL_RECORD_TITLE_WIDTH[4], anchor="center")
+            temp.grid(row=0, column=4)
+            temp = Label(tempFrame, text=str(rows[9]).zfill(2) + ":" + str(rows[10]).zfill(2), width=LABEL_RECORD_TITLE_WIDTH[5], anchor="center")
+            temp.grid(row=0, column=5)
+            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[6], width=LABEL_RECORD_TITLE_WIDTH[6], command=lambda row=rows[0]: playSoundFunc(row))
+            temp.grid(row=0, column=6)
+            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[7], width=LABEL_RECORD_TITLE_WIDTH[7], command=None)
+            temp.grid(row=0, column=7)
+            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[8], width=LABEL_RECORD_TITLE_WIDTH[8], command=None)
+            temp.grid(row=0, column=8)
+
+        connect.close()
+
+    여기서 노래 시작 정지 수정 삭제 기능 구현할 것
+    def playSoundFunc(primaryKey):
+        global play
+
         connect = sqlite3.connect("audiolist.db")
         cursor = connect.cursor()
 
-        cursor.execute('SELECT * from audiolisttable')
-        for row in cursor:
-            recordPrimaryKey.append(row[0])
+        cursor.execute('SELECT * from audiolisttable where id=?', (primaryKey, ))
+        get = cursor.fetchone()
 
-            temp = boolVarCheckbuttonNumberFields.append(BooleanVar())
-            temp.set(False)
-            temp = strVarLabelFileNameFields.append(StringVar())
-            temp.set()
-            temp = strVarLabelFilePathFields.append(StringVar())
+        print(cursor.fetchall())
 
-            temp = strVarLabelVolumeFields.append(StringVar())
-
-            temp = strVarLabelWeekFields.append(StringVar())
-            
-            temp = strVarLabelTimeFields.append(StringVar())
-
-
+        connect.commit()
         connect.close()
+
+        play = pygame.mixer.Sound(get[1])
+        play.set_volume(float(get[3]) / 100)
+        play.play()
 
 ## ============================================ 정의 ============================================ ##
 
     # 타입 정의
-    recordPrimaryKey = []
-    boolVarCheckbuttonNumberFields = []
-    strVarLabelFileNameFields = []
-    strVarLabelFilePathFields = []
-    strVarLabelVolumeFields = []
-    strVarLabelWeekFields = []
-    strVarLabelTimeFields = []
+
 
     # 프레임 정의
     frameButtons = Frame(window)
@@ -270,14 +306,14 @@ def main():
     # frameButtons 프레임 위젯 정의
     buttonAdd = Button(frameButtons, text=BUTTON_ADD, command=toplevelAddFunc)
     buttonDelete = Button(frameButtons, text=BUTTON_DELETE, state="disable", command=None)
-    buttonReload = Button(frameButtons, text=BUTTON_RELOAD, command=None)
+    buttonReload = Button(frameButtons, text=BUTTON_RELOAD, command=loadRecordsFunc)
 
     # frameRecordTitle 프레임 위젯 정의
     recordTitle = []
     separatorTitleCol = []
     separatorTitleRow = []
     for i in range(len(LABEL_RECORD_TITLE)):
-        recordTitle.append(Label(frameRecordTitle, text=LABEL_RECORD_TITLE[i]))
+        recordTitle.append(Label(frameRecordTitle, text=LABEL_RECORD_TITLE[i], width=LABEL_RECORD_TITLE_WIDTH[i], anchor="center"))
     for i in range(len(LABEL_RECORD_TITLE) - 1):
         separatorTitleCol.append(Separator(frameRecordTitle, orient="vertical"))
     for i in range(len(recordTitle) + len(separatorTitleCol)):
@@ -285,14 +321,7 @@ def main():
 
 
     # frameRecords 프레임 위젯 정의
-    frameOneRecord = []
-    checkbuttonNumberField = []
-    labelFileNameField = []
-    labelFilePathField = []
-    labelVolumeField = []
-    labelWeekField = []
-    labelTimeField = []
-    buttonStartField = []
+
     
 
 
@@ -310,7 +339,7 @@ def main():
 
     # frameRecordTitle 프레임 위젯 배치
     for i in range(len(recordTitle)):
-        recordTitle[i].grid(row=0, column=2 * i, padx=LABEL_RECORD_TITLE_WIDTH[i])
+        recordTitle[i].grid(row=0, column=2 * i)
         if i >= len(separatorTitleCol):
             break
         separatorTitleCol[i].grid(row=0, column=2 * i + 1, sticky='ns')
@@ -326,6 +355,7 @@ def main():
 
 ## 전역 변수 ##
 # pygame 오디오 재생 여부
+toplevelPlay = None
 play = None
 
 # sql DB 및 테이블 생성, 존재 유무
@@ -336,9 +366,7 @@ cursor.execute('SELECT * from sqlite_master WHERE type="table" AND name="audioli
 row = cursor.fetchall()
 if not row:
     connect.execute('CREATE TABLE audiolisttable(id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT, name TEXT, vol INTEGER, mon INTEGER, tue INTEGER, wed INTEGER, thu INTEGER, fri INTEGER, hour INTEGER, minute INTEGER)') 
-cursor.execute('SELECT * from audiolisttable')
-for row in cursor:
-    print(row)
+
 connect.commit()
 connect.close()
 

@@ -7,8 +7,8 @@ BUTTON_ADD = "추가"
 BUTTON_DELETE = "삭제"
 BUTTON_RELOAD = "새로고침"
 
-LABEL_RECORD_TITLE = ["번호", "파일명", "파일 경로", "볼륨", "요일", "시간", "재생", "수정"]
-LABEL_RECORD_TITLE_WIDTH = [10, 50, 100, 10, 20, 30, 10, 10]
+LABEL_RECORD_TITLE = ["번호", "파일명", "파일 경로", "볼륨", "요일", "시/분", "재생", "수정", "삭제"]
+LABEL_RECORD_TITLE_WIDTH = [5, 30, 60, 7, 10, 8, 7, 7, 7]
 
 
 
