@@ -1,5 +1,5 @@
 ## main ##
-TITLE = "AUtoDio"
+TITLE = "AUtoDio Ver. 0.1.0"
 
 GEOMETRY = "1600x900"
 
