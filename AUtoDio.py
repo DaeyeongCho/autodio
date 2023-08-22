@@ -17,8 +17,9 @@ def main():
     window.title(TITLE)
     window.geometry(GEOMETRY)
     window.resizable(width=FALSE, height=FALSE)
-    icon = PhotoImage(file="./images/icon_semi.png")
-    window.wm_iconphoto(False, icon)
+    path = os.path.join(os.path.dirname(__file__), 'icon.ico')
+    if os.path.isfile(path):
+        window.iconbitmap(path)
     pygame.init()
     pygame.mixer.init()
 

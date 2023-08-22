@@ -1,6 +1,4 @@
 __pycache__/
 .vscode/
+dummy/
 audiolist.db
-dummy.txt
-test.py
-update_history.txt
