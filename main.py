@@ -209,13 +209,13 @@ def main():
 
 
         ## ===== toplevelAdd 배치 ===== ##
-        addFrameFilePath.pack(side=TOP)
-        addFrameFileName.pack(side=TOP)
-        addFrameFileAdd.pack(side=TOP)
-        addFrameVolume.pack(side=TOP)
-        addFrameWeek.pack(side=TOP)
-        addFrameTime.pack(side=TOP)
-        addFrameAdd.pack(side=TOP)
+        addFrameFilePath.pack(side=TOP, pady=(5, 0))
+        addFrameFileName.pack(side=TOP, pady=3)
+        addFrameFileAdd.pack(side=TOP, pady=(0, 10))
+        addFrameVolume.pack(side=TOP, pady=10)
+        addFrameWeek.pack(side=TOP, pady=10)
+        addFrameTime.pack(side=TOP, pady=10)
+        addFrameAdd.pack(side=BOTTOM, pady=(0, 20))
 
         addLabelFilePath.pack(side=LEFT)
         addLabelFilePathString.pack(side=LEFT)
@@ -431,11 +431,11 @@ def main():
         ## ===== toplevelModify 배치 ===== ##
 
         # 프레임
-        modifyFrameFileName.pack(side=TOP)
-        modifyFrameVolume.pack(side=TOP)
-        modifyFrameWeek.pack(side=TOP)
-        modifyFrameTime.pack(side=TOP)
-        modifyFrameModify.pack(side=TOP)
+        modifyFrameFileName.pack(side=TOP, pady=5)
+        modifyFrameVolume.pack(side=TOP, pady=5)
+        modifyFrameWeek.pack(side=TOP, pady=5)
+        modifyFrameTime.pack(side=TOP, pady=5)
+        modifyFrameModify.pack(side=BOTTOM, pady=(0, 20))
 
         # modifyFrameFileName
         modifyLabelFileName.pack()
@@ -503,7 +503,7 @@ def main():
                 weeks += "금, "
             
             tempFrame = Frame(frameRecords)
-            tempFrame.pack(side=TOP)
+            tempFrame.pack(side=TOP, pady=3)
             temp = Label(tempFrame, text=str(number), width=LABEL_RECORD_TITLE_WIDTH[0], anchor="center")
             temp.grid(row=0, column=0)
             temp = Label(tempFrame, text=rows[2], width=LABEL_RECORD_TITLE_WIDTH[1], anchor="center")
@@ -516,13 +516,13 @@ def main():
             temp.grid(row=0, column=4)
             temp = Label(tempFrame, text=str(rows[9]).zfill(2) + ":" + str(rows[10]).zfill(2) + ":" + str(rows[11]).zfill(2), width=LABEL_RECORD_TITLE_WIDTH[5], anchor="center")
             temp.grid(row=0, column=5)
-            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[6], width=LABEL_RECORD_TITLE_WIDTH[6], command=lambda row=rows[0], number=number - 1: playSoundFunc(row, number))
+            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[6], width=LABEL_RECORD_TITLE_WIDTH[6] - 1, command=lambda row=rows[0], number=number - 1: playSoundFunc(row, number))
             rowClone.append(temp)
             temp.grid(row=0, column=6)
-            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[7], width=LABEL_RECORD_TITLE_WIDTH[7], command=lambda row=rows[0]: toplevelModifyFunc(row))
+            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[7], width=LABEL_RECORD_TITLE_WIDTH[7] - 1, command=lambda row=rows[0]: toplevelModifyFunc(row))
             rowClone.append(temp)
-            temp.grid(row=0, column=7)
-            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[8], width=LABEL_RECORD_TITLE_WIDTH[8], command=lambda row=rows[0]: deleteRecordFunc(row))
+            temp.grid(row=0, column=7, padx=1)
+            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[8], width=LABEL_RECORD_TITLE_WIDTH[8] - 1, command=lambda row=rows[0]: deleteRecordFunc(row))
             rowClone.append(temp)
             temp.grid(row=0, column=8)
 
@@ -555,8 +555,8 @@ def main():
         play.play()
         nowPlaying.append([primaryKey, number])
 
-        recordList[number][12].configure(text=BUTTON_STOP)
-        recordList[number][12].configure(command=lambda: stopSoundFunc(primaryKey, number))
+        recordList[number][13].configure(text=BUTTON_STOP)
+        recordList[number][13].configure(command=lambda: stopSoundFunc(primaryKey, number))
 
 
     def stopSoundFunc(primaryKey, number):
@@ -566,8 +566,8 @@ def main():
 
         play.stop()
 
-        recordList[number][12].configure(text=BUTTON_PLAY)
-        recordList[number][12].configure(command=lambda: playSoundFunc(primaryKey, number))
+        recordList[number][13].configure(text=BUTTON_PLAY)
+        recordList[number][13].configure(command=lambda: playSoundFunc(primaryKey, number))
         
         nowPlaying.remove([primaryKey, number])
 
@@ -652,7 +652,6 @@ def main():
         nowHour = 0
         nowMinute = 0
         nowSecond = 0
-        nowWeek = ""
 
         timeList = ""
 
@@ -662,18 +661,6 @@ def main():
         timeList = timeList[0].split(":")
 
         getWeek = datetime.datetime.today().weekday()
-        if getWeek == 0:
-            nowWeek = "mon"
-        elif getWeek == 1:
-            nowWeek = "tue"
-        elif getWeek == 2:
-            nowWeek = "wed"
-        elif getWeek == 3:
-            nowWeek = "thu"
-        elif getWeek == 4:
-            nowWeek = "fri"
-        else:
-            nowWeek = "no"
 
         nowHour = timeList[0]
         nowMinute = timeList[1]
@@ -690,15 +677,14 @@ def main():
 
             cursor.execute('SELECT * FROM "audiolisttable" where hour=? AND minute=? AND second=?', (timeList[0], timeList[1], timeList[2]))
             get = cursor.fetchone()
-            레코드 리스트에서 식별번호 찾아 하기
-            # if get != None:
-            #     playSoundFunc(get[0], get[11])
-
-            print(recordList)
 
             cursor.close()
             connect.close()
-        
+            
+            if get != None:
+                for i in recordList:
+                    if (i[0] == get[0]) and (get[getWeek + 4] == 1):
+                        playSoundFunc(get[0], i[12])
 
         window.after(500, timeCheckAutoStartFunc)
 
@@ -744,7 +730,7 @@ def main():
 
     # 프레임 배치
     frameButtons.pack(side=TOP)
-    frameRecordTitle.pack(side=TOP)
+    frameRecordTitle.pack(side=TOP, pady=(10, 0))
     frameRecords.pack(side=TOP)
 
     # frameButtons 프레임 위젯 배치
@@ -770,6 +756,7 @@ def main():
     timeCheckAutoStartFunc()
     loadRecordsFunc()
     window.mainloop()
+    
 
 
 ## 전역 변수 ##
