@@ -1,13 +1,11 @@
-import copy
 import datetime
-import threading
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 from tkinter.ttk import *
-import multiprocessing
 import sqlite3
 import pygame
+import os.path
 
 from define import *
 
@@ -19,6 +17,8 @@ def main():
     window.title(TITLE)
     window.geometry(GEOMETRY)
     window.resizable(width=FALSE, height=FALSE)
+    icon = PhotoImage(file="./images/icon_semi.png")
+    window.wm_iconphoto(False, icon)
     pygame.init()
     pygame.mixer.init()
 
@@ -116,6 +116,11 @@ def main():
             addFilePath = strVarAddLabelFilePath.get()
             addVolumeSize = intVarAddScaleVolume.get() * 0.01
 
+            if not os.path.isfile(addFilePath):
+                messagebox.showwarning("경고!", "해당 경로에 파일이 없습니다.")
+                toplevelAdd.lift()
+                return
+
             toplevelPlay = pygame.mixer.Sound(addFilePath)
             toplevelPlay.set_volume(addVolumeSize)
             toplevelPlay.play()
@@ -142,6 +147,11 @@ def main():
         ## ===== toplevelAdd 정의 ===== ##
 
         # 타입
+        addGetTime = str(datetime.datetime.now())
+        addTimeList = addGetTime.split(" ")
+        addTimeList = addTimeList[1].split(".")
+        addTimeList = addTimeList[0].split(":")
+
         strVarAddLabelFilePath = StringVar()
         strVarAddLabelFilePath.set("")
         strVarAddLabelFileName = StringVar()
@@ -162,11 +172,11 @@ def main():
         boolVarAddCheckboxFri.set(True)
 
         strVarAddComboboxHour = StringVar()
-        strVarAddComboboxHour.set('0')
+        strVarAddComboboxHour.set(addTimeList[0])
         strVarAddComboboxMinute = StringVar()
-        strVarAddComboboxMinute.set('0')
+        strVarAddComboboxMinute.set(addTimeList[1])
         strVarAddComboboxSecond = StringVar()
-        strVarAddComboboxSecond.set('0')
+        strVarAddComboboxSecond.set(addTimeList[2])
 
         # 프레임
         addFrameFilePath = Frame(toplevelAdd)
@@ -178,11 +188,11 @@ def main():
         addFrameAdd = Frame(toplevelAdd)
         
         #위젯
-        addLabelFilePath = Label(addFrameFilePath, text=LABEL_FILE_PATH, width=9, anchor="e")
-        addLabelFilePathString = Label(addFrameFilePath, textvariable=strVarAddLabelFilePath, wraplength=260)
+        addLabelFilePath = Label(addFrameFilePath, text=LABEL_FILE_PATH, width=FILE_NAME_TITLE_WIDTH, anchor="e")
+        addLabelFilePathString = Label(addFrameFilePath, textvariable=strVarAddLabelFilePath, wraplength=FILE_NAME_WRAPLENGTH)
 
-        addLabelFileName = Label(addFrameFileName, text=LABEL_FILE_NAME, width=9, anchor="e")
-        addLabelFileNameString = Label(addFrameFileName, textvariable=strVarAddLabelFileName, wraplength=260)
+        addLabelFileName = Label(addFrameFileName, text=LABEL_FILE_NAME, width=FILE_NAME_TITLE_WIDTH, anchor="e")
+        addLabelFileNameString = Label(addFrameFileName, textvariable=strVarAddLabelFileName, wraplength=FILE_NAME_WRAPLENGTH)
 
         addButtonOpenFile = Button(addFrameFileAdd, text=BUTTON_OPEN_FILE, command=addFileOpenfunc)
 
@@ -301,6 +311,11 @@ def main():
             modifyFilePath = get[1]
             modifyVolumeSize = float(intVarModifyScaleVolume.get()) * 0.01
 
+            if not os.path.isfile(modifyFilePath):
+                messagebox.showwarning("경고!", "해당 경로에 파일이 없습니다.")
+                toplevelModify.lift()
+                return
+
             toplevelPlay = pygame.mixer.Sound(modifyFilePath)
             toplevelPlay.set_volume(modifyVolumeSize)
             toplevelPlay.play()
@@ -401,7 +416,8 @@ def main():
         modifyFrameModify = Frame(toplevelModify)
 
         # modifyFrameFileName
-        modifyLabelFileName = Label(modifyFrameFileName, text=LABEL_FILE_NAME + get[2])
+        modifyLabelFileNameText = Label(modifyFrameFileName, text=LABEL_FILE_NAME, width=FILE_NAME_TITLE_WIDTH, anchor="e")
+        modifyLabelFileName = Label(modifyFrameFileName, text=get[2], wraplength=FILE_NAME_WRAPLENGTH)
 
         # modifyFrameVolume
         modifyLabelVolume = Label(modifyFrameVolume, text=LABEL_VOLUME)
@@ -438,7 +454,8 @@ def main():
         modifyFrameModify.pack(side=BOTTOM, pady=(0, 20))
 
         # modifyFrameFileName
-        modifyLabelFileName.pack()
+        modifyLabelFileNameText.pack(side=LEFT)
+        modifyLabelFileName.pack(side=LEFT)
 
         # modifyFrameVolume
         modifyLabelVolume.pack(side=LEFT)
@@ -473,6 +490,12 @@ def main():
 
 ## ============================================ 프로그램 ============================================ ##
 
+    def exitProgram():
+        exitProgramAnswer = messagebox.askokcancel("안내", "종료 하시겠습니까?")
+        if exitProgramAnswer:
+            window.quit()
+            window.destroy()
+
     def loadRecordsFunc():
         global recordList
         number = 0
@@ -506,9 +529,9 @@ def main():
             tempFrame.pack(side=TOP, pady=3)
             temp = Label(tempFrame, text=str(number), width=LABEL_RECORD_TITLE_WIDTH[0], anchor="center")
             temp.grid(row=0, column=0)
-            temp = Label(tempFrame, text=rows[2], width=LABEL_RECORD_TITLE_WIDTH[1], anchor="center")
+            temp = Label(tempFrame, text=rows[2], width=LABEL_RECORD_TITLE_WIDTH[1], anchor="center", wraplength=LABEL_RECORD_FILE_NAME_WRAPLENGTH)
             temp.grid(row=0, column=1)
-            temp = Label(tempFrame, text=rows[1], width=LABEL_RECORD_TITLE_WIDTH[2], anchor="center")
+            temp = Label(tempFrame, text=rows[1], width=LABEL_RECORD_TITLE_WIDTH[2], anchor="center", wraplength=LABEL_RECORD_FILE_PATH_WRAPLENGTH)
             temp.grid(row=0, column=2)
             temp = Label(tempFrame, text=str(rows[3]), width=LABEL_RECORD_TITLE_WIDTH[3], anchor="center")
             temp.grid(row=0, column=3)
@@ -549,6 +572,10 @@ def main():
 
         cursor.close()
         connect.close()
+
+        if not os.path.isfile(get[1]):
+            messagebox.showwarning("경고!", "해당 경로에 파일이 없습니다.")
+            return
 
         play = pygame.mixer.Sound(get[1])
         play.set_volume(float(get[3]) / 100)
@@ -610,7 +637,7 @@ def main():
         loadRecordsFunc()
 
     def deleteRecordFunc(primaryKey):
-        deleteAnswer = messagebox.askokcancel("경고", "정말 삭제하시겠습니까?")
+        deleteAnswer = messagebox.showwarning("경고!", "정말 삭제하시겠습니까?")
 
         if deleteAnswer:
             connect = sqlite3.connect("audiolist.db")
@@ -626,9 +653,9 @@ def main():
 
 
     def initializationDatabase():
-        initializationAnswer = messagebox.askokcancel("경고", "정말 '초기화'하시겠습니까?")
+        initializationAnswer = messagebox.askokcancel("경고!", "정말 '초기화'하시겠습니까?")
         if initializationAnswer:
-            initializationReanswer = messagebox.askokcancel("경고", "되돌릴 수 없습니다. 정말 '초기화'하시겠습니까?")
+            initializationReanswer = messagebox.askokcancel("경고!", "되돌릴 수 없습니다. 정말 '초기화'하시겠습니까?")
             if initializationReanswer:
                 connect = sqlite3.connect("audiolist.db")
                 cursor = connect.cursor()
@@ -639,9 +666,10 @@ def main():
                 cursor.close()
                 connect.close()
 
-                messagebox.showinfo("초기화 완료", "초기화 되었습니다. 프로그램을 재시작 해주세요.")
+                messagebox.showinfo("안내", "초기화 되었습니다. 프로그램을 재시작 해주세요.")
 
                 window.quit()
+                window.destroy()
 
     def timeCheckAutoStartFunc():
         global saveHour
@@ -686,22 +714,22 @@ def main():
                     if (i[0] == get[0]) and (get[getWeek + 4] == 1):
                         playSoundFunc(get[0], i[12])
 
-        window.after(500, timeCheckAutoStartFunc)
+        window.after(400, timeCheckAutoStartFunc)
 
 
 ## ============================================ 정의 ============================================ ##
 
     # 타입 정의
 
+    # 메뉴 바 정의
+    menubar = Menu(window)
+    menuFile = Menu(menubar, tearoff=0)
+    menuProblem = Menu(menubar, tearoff=0)
+
     # 프레임 정의
-    frameButtons = Frame(window)
     frameRecordTitle = Frame(window)
     frameRecords = Frame(window)
-
-    # frameButtons 프레임 위젯 정의
-    buttonAdd = Button(frameButtons, text=BUTTON_ADD, command=toplevelAddFunc)
-    buttonReload = Button(frameButtons, text=BUTTON_RELOAD, command=reloadRecordFunc)
-    buttonInitialization = Button(frameButtons, text=BUTTON_INITIALIZATION_DATABASE, command=initializationDatabase)
+    frameButtons = Frame(window)
 
     # frameRecordTitle 프레임 위젯 정의
     recordTitle = []
@@ -714,29 +742,34 @@ def main():
     for i in range(len(recordTitle) + len(separatorTitleCol)):
         separatorTitleRow.append(Separator(frameRecordTitle, orient="horizontal"))
 
-
     # frameRecords 프레임 위젯 정의
-
-    
-
+        # loadRecordsFunc()가 관여
 
 
-
+    # frameButtons 프레임 위젯 정의
+    buttonAdd = Button(frameButtons, text=BUTTON_ADD, command=toplevelAddFunc)
+    buttonReload = Button(frameButtons, text=BUTTON_RELOAD, command=reloadRecordFunc)
+    buttonExit = Button(frameButtons, text=BUTTON_EXIT, command=exitProgram)
 
 
 
 
 ## ============================================ 배치 ============================================ ##
 
-    # 프레임 배치
-    frameButtons.pack(side=TOP)
-    frameRecordTitle.pack(side=TOP, pady=(10, 0))
-    frameRecords.pack(side=TOP)
+    # 메뉴바 배치
+    menuFile.add_command(label=MENU_FLIE_ADD, command=toplevelAddFunc)
+    menuFile.add_separator()
+    menuFile.add_command(label=MENU_FLIE_EXIT, command=exitProgram)
+    menubar.add_cascade(label=MENU_FLIE, menu=menuFile)
 
-    # frameButtons 프레임 위젯 배치
-    buttonAdd.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
-    buttonReload.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
-    buttonInitialization.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
+    menuProblem.add_command(label=MENU_PROBLEM_REROAD, command=reloadRecordFunc)
+    menuProblem.add_command(label=MENU_PROBLEM_INITIALIZATION, command=initializationDatabase)
+    menubar.add_cascade(label=MENU_PROBLEM, menu=menuProblem)
+
+    # 프레임 배치
+    frameRecordTitle.pack(side=TOP, pady=(20, 0))
+    frameRecords.pack(side=TOP)
+    frameButtons.pack(side=BOTTOM, pady=(0, 20))
 
     # frameRecordTitle 프레임 위젯 배치
     for i in range(len(recordTitle)):
@@ -747,14 +780,20 @@ def main():
         
     for i in range(len(separatorTitleRow)):
         separatorTitleRow[i].grid(row=1, column=i, sticky='ew')
-    
 
     # frameButtons 프레임 위젯 배치
+    buttonAdd.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
+    buttonReload.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
+    buttonExit.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
+    
+
+
     
 
     # 초기 실행 함수
     timeCheckAutoStartFunc()
     loadRecordsFunc()
+    window.config(menu=menubar)
     window.mainloop()
     
 

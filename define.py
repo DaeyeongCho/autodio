@@ -1,19 +1,28 @@
 ## main ##
-TITLE = "AUtoDio Ver. 0.1.0"
+TITLE = "AUtoDio Ver 0.1.1"
 
 GEOMETRY = "1600x900"
 
 BUTTON_ADD = "추가"
 BUTTON_DELETE = "삭제"
 BUTTON_RELOAD = "새로고침"
-BUTTON_INITIALIZATION_DATABASE = "초기화"
+BUTTON_EXIT = "끝내기"
 
 LABEL_RECORD_TITLE = ["번호", "파일명", "파일 경로", "볼륨", "요일", "시/분/초", "재생", "수정", "삭제"]
 LABEL_RECORD_TITLE_WIDTH = [5, 50, 80, 8, 16, 10, 8, 8, 8]
+LABEL_RECORD_FILE_NAME_WRAPLENGTH = 300
+LABEL_RECORD_FILE_PATH_WRAPLENGTH = 500
 
 
 
+## 메뉴 바 ##
+MENU_FLIE = "파일"
+MENU_FLIE_ADD = "추가"
+MENU_FLIE_EXIT = "끝내기"
 
+MENU_PROBLEM = "문제 해결"
+MENU_PROBLEM_REROAD = "새로고침"
+MENU_PROBLEM_INITIALIZATION = "초기화"
 
 
 
@@ -45,7 +54,12 @@ COMBOBOX_SECOND = list(range(60))
 LABEL_SECOND = "초 "
 COMBOBOX_WIDTH = 3
 
+FILE_NAME_TITLE_WIDTH = 9
+FILE_NAME_WRAPLENGTH = 220
+
+
+
 ## toplevelModify ##
-MODIFY_GEOMETRY = "300x200"
+MODIFY_GEOMETRY = "300x250"
 
 BUTTON_MODIFY = "수정"

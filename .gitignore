@@ -3,3 +3,4 @@ __pycache__/
 audiolist.db
 dummy.txt
 test.py
+update_history.txt
