@@ -1,7 +1,10 @@
+import copy
+import datetime
+import threading
 from tkinter import *
 from tkinter import filedialog
+from tkinter import messagebox
 from tkinter.ttk import *
-from playsound import playsound
 import multiprocessing
 import sqlite3
 import pygame
@@ -38,6 +41,8 @@ def main():
                 toplevelPlay.stop()
             toplevelAdd.destroy()
 
+        toplevelAdd.protocol('WM_DELETE_WINDOW', exitWindowX)
+
         ## ===== toplevelAdd 프로그램 ===== ##
 
         def addFileOpenfunc():
@@ -63,6 +68,7 @@ def main():
             addFri = 1
             addHour = 0
             addMinute = 0
+            addSecond = 0
             
             addFilePath = strVarAddLabelFilePath.get()
             addFileName = strVarAddLabelFileName.get()
@@ -82,20 +88,27 @@ def main():
 
             addHour = int(strVarAddComboboxHour.get())
             addMinute = int(strVarAddComboboxMinute.get())
+            addSecond = int(strVarAddComboboxSecond.get())
 
             connect = sqlite3.connect("audiolist.db")
             cursor = connect.cursor()
 
-            cursor.execute("INSERT INTO audiolisttable (path, name, vol, mon, tue, wed, thu, fri, hour, minute) Values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", (addFilePath, addFileName, addVolume, addMon, addTue, addWed, addThu, addFri, addHour, addMinute))
+            cursor.execute("INSERT INTO audiolisttable (path, name, vol, mon, tue, wed, thu, fri, hour, minute, second) Values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", (addFilePath, addFileName, addVolume, addMon, addTue, addWed, addThu, addFri, addHour, addMinute, addSecond))
 
             connect.commit()
+            cursor.close()
             connect.close()
 
             addButtonPlay.configure(state="disable")
             addButtonAdd.configure(state="disable")
+            if toplevelPlay == None:
+                toplevelAdd.destroy()
+                reloadRecordFunc()
+                return
             if toplevelPlay.get_num_channels() > 0:
                 toplevelPlay.stop()
             toplevelAdd.destroy()
+            reloadRecordFunc()
 
 
         def addPlayAudioFunc():
@@ -116,12 +129,12 @@ def main():
             toplevelPlay.stop()
             addButtonPlay.configure(text=BUTTON_PLAY, command=addPlayAudioFunc)
 
-        toplevelAdd.protocol('WM_DELETE_WINDOW', exitWindowX)
-
 
         def setVolumeFunc(addVolumeSizeStr):
             addVolumeSize = float(addVolumeSizeStr) / 100
             
+            if toplevelPlay == None:
+                return
             if toplevelPlay.get_num_channels() > 0:
                 toplevelPlay.set_volume(addVolumeSize)
 
@@ -152,6 +165,8 @@ def main():
         strVarAddComboboxHour.set('0')
         strVarAddComboboxMinute = StringVar()
         strVarAddComboboxMinute.set('0')
+        strVarAddComboboxSecond = StringVar()
+        strVarAddComboboxSecond.set('0')
 
         # 프레임
         addFrameFilePath = Frame(toplevelAdd)
@@ -187,6 +202,8 @@ def main():
         addLabelHour = Label(addFrameTime, text=LABEL_HOUR)
         addComboboxMinute = Combobox(addFrameTime, width=COMBOBOX_WIDTH, textvariable=strVarAddComboboxMinute, values=COMBOBOX_MINUTE)
         addLabelMinute = Label(addFrameTime, text=LABEL_MINUTE)
+        addComboboxSecond = Combobox(addFrameTime, width=COMBOBOX_WIDTH, textvariable=strVarAddComboboxSecond, values=COMBOBOX_SECOND)
+        addLabelSecond = Label(addFrameTime, text=LABEL_SECOND)
 
         addButtonAdd = Button(addFrameAdd, text=BUTTON_ADD, state="disable", command=addFileAddFunc)
 
@@ -224,15 +241,243 @@ def main():
         addLabelHour.pack(side=LEFT)
         addComboboxMinute.pack(side=LEFT)
         addLabelMinute.pack(side=LEFT)
+        addComboboxSecond.pack(side=LEFT)
+        addLabelSecond.pack(side=LEFT)
 
         addButtonAdd.pack()
 
+
+
+
+
+
+
+
+
+
+## ============================================ toplevelModify 함수 ============================================ ##
+
+    ## toplevelModify 윈도우 창 함수 ##
+    def toplevelModifyFunc(primaryKey):
+        toplevelModify = Toplevel(window)
+        toplevelModify.geometry(MODIFY_GEOMETRY)
+        toplevelModify.resizable(width=FALSE, height=FALSE)
+
+        connect = sqlite3.connect("audiolist.db")
+        cursor = connect.cursor()
+
+        cursor.execute('SELECT * from audiolisttable where id=?', (primaryKey, ))
+        get = cursor.fetchone()
+
+        cursor.close()
+        connect.close()
+
+        # X버튼 클릭 시
+        def exitWindowX():
+            if toplevelPlay == None:
+                toplevelModify.destroy()
+                return
+
+            if toplevelPlay.get_num_channels() > 0:
+                toplevelPlay.stop()
+            toplevelModify.destroy()
+
+        toplevelModify.protocol('WM_DELETE_WINDOW', exitWindowX)
+
+
+        ## ===== toplevelModify 프로그램 ===== ##
+
+        def setVolumeFunc(modifyVolumeSizeStr):
+            modifyVolumeSize = float(modifyVolumeSizeStr) / 100
+            
+            if toplevelPlay == None:
+                return
+            if toplevelPlay.get_num_channels() > 0:
+                toplevelPlay.set_volume(modifyVolumeSize)
+
+
+        def modifyPlayAudioFunc():
+            global toplevelPlay
+            modifyFilePath = get[1]
+            modifyVolumeSize = float(intVarModifyScaleVolume.get()) * 0.01
+
+            toplevelPlay = pygame.mixer.Sound(modifyFilePath)
+            toplevelPlay.set_volume(modifyVolumeSize)
+            toplevelPlay.play()
+
+            modifyButtonPlay.configure(text=BUTTON_STOP, command=modifyStopAudioFunc)
+
+
+        def modifyStopAudioFunc():
+            global toplevelPlay
+
+            toplevelPlay.stop()
+            modifyButtonPlay.configure(text=BUTTON_PLAY, command=modifyPlayAudioFunc)
+
+        def modifyFileModifyFunc():
+            modifyVolume = 0
+            modifyMon = 1
+            modifyTue = 1
+            modifyWed = 1
+            modifyThu = 1
+            modifyFri = 1
+            modifyHour = 0
+            modifyMinute = 0
+            modifySecond = 0
+
+            modifyVolume = intVarModifyScaleVolume.get()
+
+            if not boolVarModifyCheckboxMon.get():
+                modifyMon = 0
+            if not boolVarModifyCheckboxTue.get():
+                modifyTue = 0
+            if not boolVarModifyCheckboxWed.get():
+                modifyWed = 0
+            if not boolVarModifyCheckboxThu.get():
+                modifyThu = 0
+            if not boolVarModifyCheckboxFri.get():
+                modifyFri = 0
+
+            modifyHour = int(strVarModifyComboboxHour.get())
+            modifyMinute = int(strVarModifyComboboxMinute.get())
+            modifySecond = int(strVarModifyComboboxSecond.get())
+
+            connect = sqlite3.connect("audiolist.db")
+            cursor = connect.cursor()
+
+            cursor.execute("UPDATE 'audiolisttable' SET vol = ? WHERE id = ?", (modifyVolume, primaryKey))
+            cursor.execute("UPDATE 'audiolisttable' SET mon = ? WHERE id = ?", (modifyMon, primaryKey))
+            cursor.execute("UPDATE 'audiolisttable' SET tue = ? WHERE id = ?", (modifyTue, primaryKey))
+            cursor.execute("UPDATE 'audiolisttable' SET wed = ? WHERE id = ?", (modifyWed, primaryKey))
+            cursor.execute("UPDATE 'audiolisttable' SET thu = ? WHERE id = ?", (modifyThu, primaryKey))
+            cursor.execute("UPDATE 'audiolisttable' SET fri = ? WHERE id = ?", (modifyFri, primaryKey))
+            cursor.execute("UPDATE 'audiolisttable' SET hour = ? WHERE id = ?", (modifyHour, primaryKey))
+            cursor.execute("UPDATE 'audiolisttable' SET minute = ? WHERE id = ?", (modifyMinute, primaryKey))
+            cursor.execute("UPDATE 'audiolisttable' SET second = ? WHERE id = ?", (modifySecond, primaryKey))
+
+            connect.commit()
+            cursor.close()
+            connect.close()
+
+            if toplevelPlay == None:
+                toplevelModify.destroy()
+                reloadRecordFunc()
+                return
+            if toplevelPlay.get_num_channels() > 0:
+                toplevelPlay.stop()
+            toplevelModify.destroy()
+            reloadRecordFunc()
+
+
+        ## ===== toplevelModify 정의 ===== ##
+        
+        # 타입
+        intVarModifyScaleVolume = IntVar()
+        intVarModifyScaleVolume.set(get[3])
+
+        boolVarModifyCheckboxMon = BooleanVar()
+        boolVarModifyCheckboxMon.set(True if get[4] == 1 else False)
+        boolVarModifyCheckboxTue = BooleanVar()
+        boolVarModifyCheckboxTue.set(True if get[5] == 1 else False)
+        boolVarModifyCheckboxWed = BooleanVar()
+        boolVarModifyCheckboxWed.set(True if get[6] == 1 else False)
+        boolVarModifyCheckboxThu = BooleanVar()
+        boolVarModifyCheckboxThu.set(True if get[7] == 1 else False)
+        boolVarModifyCheckboxFri = BooleanVar()
+        boolVarModifyCheckboxFri.set(True if get[8] == 1 else False)
+
+        strVarModifyComboboxHour = StringVar()
+        strVarModifyComboboxHour.set(str(get[9]))
+        strVarModifyComboboxMinute = StringVar()
+        strVarModifyComboboxMinute.set(str(get[10]))
+        strVarModifyComboboxSecond = StringVar()
+        strVarModifyComboboxSecond.set(str(get[11]))
+
+        # 프레임
+        modifyFrameFileName = Frame(toplevelModify)
+        modifyFrameVolume = Frame(toplevelModify)
+        modifyFrameWeek = Frame(toplevelModify)
+        modifyFrameTime = Frame(toplevelModify)
+        modifyFrameModify = Frame(toplevelModify)
+
+        # modifyFrameFileName
+        modifyLabelFileName = Label(modifyFrameFileName, text=LABEL_FILE_NAME + get[2])
+
+        # modifyFrameVolume
+        modifyLabelVolume = Label(modifyFrameVolume, text=LABEL_VOLUME)
+        modifyScaleVolume = Scale(modifyFrameVolume, from_=0, to=100, variable=intVarModifyScaleVolume, command=setVolumeFunc)
+        modifyButtonPlay = Button(modifyFrameVolume, text=BUTTON_PLAY, command=modifyPlayAudioFunc)
+
+        # modifyFrameWeek
+        modifyLabelWeek = Label(modifyFrameWeek, text=LABEL_WEEK)
+        modifyCheckbuttonMon = Checkbutton(modifyFrameWeek, text=CHECKBUTTON_MON, variable=boolVarModifyCheckboxMon)
+        modifyCheckbuttonTue = Checkbutton(modifyFrameWeek, text=CHECKBUTTON_TUE, variable=boolVarModifyCheckboxTue)
+        modifyCheckbuttonWed = Checkbutton(modifyFrameWeek, text=CHECKBUTTON_WED, variable=boolVarModifyCheckboxWed)
+        modifyCheckbuttonThu = Checkbutton(modifyFrameWeek, text=CHECKBUTTON_THU, variable=boolVarModifyCheckboxThu)
+        modifyCheckbuttonFri = Checkbutton(modifyFrameWeek, text=CHECKBUTTON_FRI, variable=boolVarModifyCheckboxFri)
+
+        # modifyFrameTime
+        modifyLabelTime = Label(modifyFrameTime, text=LABEL_TIME)
+        modifyComboboxHour = Combobox(modifyFrameTime, width=COMBOBOX_WIDTH, textvariable=strVarModifyComboboxHour, values=COMBOBOX_HOUR)
+        modifyLabelHour = Label(modifyFrameTime, text=LABEL_HOUR)
+        modifyComboboxMinute = Combobox(modifyFrameTime, width=COMBOBOX_WIDTH, textvariable=strVarModifyComboboxMinute, values=COMBOBOX_MINUTE)
+        modifyLabelMinute = Label(modifyFrameTime, text=LABEL_MINUTE)
+        modifyComboboxSecond = Combobox(modifyFrameTime, width=COMBOBOX_WIDTH, textvariable=strVarModifyComboboxSecond, values=COMBOBOX_SECOND)
+        modifyLabelSecond = Label(modifyFrameTime, text=LABEL_SECOND)
+
+        modifyButtonModify = Button(modifyFrameModify, text=BUTTON_MODIFY, command=modifyFileModifyFunc)
+
+
+        ## ===== toplevelModify 배치 ===== ##
+
+        # 프레임
+        modifyFrameFileName.pack(side=TOP)
+        modifyFrameVolume.pack(side=TOP)
+        modifyFrameWeek.pack(side=TOP)
+        modifyFrameTime.pack(side=TOP)
+        modifyFrameModify.pack(side=TOP)
+
+        # modifyFrameFileName
+        modifyLabelFileName.pack()
+
+        # modifyFrameVolume
+        modifyLabelVolume.pack(side=LEFT)
+        modifyScaleVolume.pack(side=LEFT)
+        modifyButtonPlay.pack(side=LEFT)
+
+        # modifyFrameWeek
+        modifyLabelWeek.pack(side=LEFT)
+        modifyCheckbuttonMon.pack(side=LEFT)
+        modifyCheckbuttonTue.pack(side=LEFT)
+        modifyCheckbuttonWed.pack(side=LEFT)
+        modifyCheckbuttonThu.pack(side=LEFT)
+        modifyCheckbuttonFri.pack(side=LEFT)
+
+        # modifyFrameTime
+        modifyLabelTime.pack(side=LEFT)
+        modifyComboboxHour.pack(side=LEFT)
+        modifyLabelHour.pack(side=LEFT)
+        modifyComboboxMinute.pack(side=LEFT)
+        modifyLabelMinute.pack(side=LEFT)
+        modifyComboboxSecond.pack(side=LEFT)
+        modifyLabelSecond.pack(side=LEFT)
+
+        modifyButtonModify.pack()
+
+
+
+
+
+
+
+
 ## ============================================ 프로그램 ============================================ ##
 
-    # 데이터베이스에서 가져와 출력하는 기능 만들 것
     def loadRecordsFunc():
+        global recordList
         number = 0
         weeks = ""
+
         connect = sqlite3.connect("audiolist.db")
         cursor = connect.cursor()
         
@@ -240,6 +485,12 @@ def main():
         for rows in cursor:
             number += 1
             weeks = ""
+            rowClone = []
+
+            rowClone = list(rows)
+
+            rowClone.append(number - 1)
+
             if rows[4] == 1:
                 weeks += "월, "
             if rows[5] == 1:
@@ -263,20 +514,32 @@ def main():
             temp.grid(row=0, column=3)
             temp = Label(tempFrame, text=weeks, width=LABEL_RECORD_TITLE_WIDTH[4], anchor="center")
             temp.grid(row=0, column=4)
-            temp = Label(tempFrame, text=str(rows[9]).zfill(2) + ":" + str(rows[10]).zfill(2), width=LABEL_RECORD_TITLE_WIDTH[5], anchor="center")
+            temp = Label(tempFrame, text=str(rows[9]).zfill(2) + ":" + str(rows[10]).zfill(2) + ":" + str(rows[11]).zfill(2), width=LABEL_RECORD_TITLE_WIDTH[5], anchor="center")
             temp.grid(row=0, column=5)
-            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[6], width=LABEL_RECORD_TITLE_WIDTH[6], command=lambda row=rows[0]: playSoundFunc(row))
+            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[6], width=LABEL_RECORD_TITLE_WIDTH[6], command=lambda row=rows[0], number=number - 1: playSoundFunc(row, number))
+            rowClone.append(temp)
             temp.grid(row=0, column=6)
-            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[7], width=LABEL_RECORD_TITLE_WIDTH[7], command=None)
+            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[7], width=LABEL_RECORD_TITLE_WIDTH[7], command=lambda row=rows[0]: toplevelModifyFunc(row))
+            rowClone.append(temp)
             temp.grid(row=0, column=7)
-            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[8], width=LABEL_RECORD_TITLE_WIDTH[8], command=None)
+            temp = Button(tempFrame, text=LABEL_RECORD_TITLE[8], width=LABEL_RECORD_TITLE_WIDTH[8], command=lambda row=rows[0]: deleteRecordFunc(row))
+            rowClone.append(temp)
             temp.grid(row=0, column=8)
 
+            recordList.append(rowClone)
+
+        cursor.close()
         connect.close()
 
-    여기서 노래 시작 정지 수정 삭제 기능 구현할 것
-    def playSoundFunc(primaryKey):
+    
+    def playSoundFunc(primaryKey, number):
         global play
+        global nowPlaying
+        global recordList
+
+        if nowPlaying != []:
+            for i in nowPlaying:
+                stopSoundFunc(i[0], i[1])
 
         connect = sqlite3.connect("audiolist.db")
         cursor = connect.cursor()
@@ -284,19 +547,165 @@ def main():
         cursor.execute('SELECT * from audiolisttable where id=?', (primaryKey, ))
         get = cursor.fetchone()
 
-        print(cursor.fetchall())
-
-        connect.commit()
+        cursor.close()
         connect.close()
 
         play = pygame.mixer.Sound(get[1])
         play.set_volume(float(get[3]) / 100)
         play.play()
+        nowPlaying.append([primaryKey, number])
+
+        recordList[number][12].configure(text=BUTTON_STOP)
+        recordList[number][12].configure(command=lambda: stopSoundFunc(primaryKey, number))
+
+
+    def stopSoundFunc(primaryKey, number):
+        global play
+        global nowPlaying
+        global recordList
+
+        play.stop()
+
+        recordList[number][12].configure(text=BUTTON_PLAY)
+        recordList[number][12].configure(command=lambda: playSoundFunc(primaryKey, number))
+        
+        nowPlaying.remove([primaryKey, number])
+
+    def initialization():
+        global play
+        global nowPlaying
+        global recordList
+
+        play = None
+        nowPlaying = []
+        recordList = []
+        
+        
+        if play == None:
+            pass
+        elif play.get_num_channels() > 0:
+            play.stop()
+        
+        frameRecordsList = frameRecords.pack_slaves()
+        for i in frameRecordsList:
+            recordWidgetList = i.grid_slaves()
+            for y in recordWidgetList:
+                y.destroy()
+            i.destroy()
+
+    def stopAllSound():
+        if toplevelPlay == None:
+            pass
+        elif toplevelPlay.get_num_channels() > 0:
+            toplevelPlay.stop()
+
+        if play == None:
+            pass
+        elif play.get_num_channels() > 0:
+            play.stop()
+
+    def reloadRecordFunc():
+        stopAllSound()
+        initialization()
+        loadRecordsFunc()
+
+    def deleteRecordFunc(primaryKey):
+        deleteAnswer = messagebox.askokcancel("경고", "정말 삭제하시겠습니까?")
+
+        if deleteAnswer:
+            connect = sqlite3.connect("audiolist.db")
+            cursor = connect.cursor()
+
+            cursor.execute('DELETE FROM "audiolisttable" WHERE id=?', (primaryKey, ))
+
+            connect.commit()
+            cursor.close()
+            connect.close()
+
+            reloadRecordFunc()
+
+
+    def initializationDatabase():
+        initializationAnswer = messagebox.askokcancel("경고", "정말 '초기화'하시겠습니까?")
+        if initializationAnswer:
+            initializationReanswer = messagebox.askokcancel("경고", "되돌릴 수 없습니다. 정말 '초기화'하시겠습니까?")
+            if initializationReanswer:
+                connect = sqlite3.connect("audiolist.db")
+                cursor = connect.cursor()
+
+                cursor.execute('DROP TABLE "audiolisttable"')
+
+                connect.commit()
+                cursor.close()
+                connect.close()
+
+                messagebox.showinfo("초기화 완료", "초기화 되었습니다. 프로그램을 재시작 해주세요.")
+
+                window.quit()
+
+    def timeCheckAutoStartFunc():
+        global saveHour
+        global saveMinute
+        global saveSecond
+        global saveWeek
+
+        nowHour = 0
+        nowMinute = 0
+        nowSecond = 0
+        nowWeek = ""
+
+        timeList = ""
+
+        getTime = str(datetime.datetime.now())
+        timeList = getTime.split(" ")
+        timeList = timeList[1].split(".")
+        timeList = timeList[0].split(":")
+
+        getWeek = datetime.datetime.today().weekday()
+        if getWeek == 0:
+            nowWeek = "mon"
+        elif getWeek == 1:
+            nowWeek = "tue"
+        elif getWeek == 2:
+            nowWeek = "wed"
+        elif getWeek == 3:
+            nowWeek = "thu"
+        elif getWeek == 4:
+            nowWeek = "fri"
+        else:
+            nowWeek = "no"
+
+        nowHour = timeList[0]
+        nowMinute = timeList[1]
+        nowSecond = timeList[2]
+
+        if not (saveHour == nowHour and saveMinute == nowMinute and saveSecond == nowSecond and saveWeek == getWeek):
+            saveHour = nowHour
+            saveMinute = nowMinute
+            saveSecond = nowSecond
+            saveWeek = getWeek
+
+            connect = sqlite3.connect("audiolist.db")
+            cursor = connect.cursor()
+
+            cursor.execute('SELECT * FROM "audiolisttable" where hour=? AND minute=? AND second=?', (timeList[0], timeList[1], timeList[2]))
+            get = cursor.fetchone()
+            레코드 리스트에서 식별번호 찾아 하기
+            # if get != None:
+            #     playSoundFunc(get[0], get[11])
+
+            print(recordList)
+
+            cursor.close()
+            connect.close()
+        
+
+        window.after(500, timeCheckAutoStartFunc)
+
 
 ## ============================================ 정의 ============================================ ##
 
     # 타입 정의
-
 
     # 프레임 정의
     frameButtons = Frame(window)
@@ -305,8 +714,8 @@ def main():
 
     # frameButtons 프레임 위젯 정의
     buttonAdd = Button(frameButtons, text=BUTTON_ADD, command=toplevelAddFunc)
-    buttonDelete = Button(frameButtons, text=BUTTON_DELETE, state="disable", command=None)
-    buttonReload = Button(frameButtons, text=BUTTON_RELOAD, command=loadRecordsFunc)
+    buttonReload = Button(frameButtons, text=BUTTON_RELOAD, command=reloadRecordFunc)
+    buttonInitialization = Button(frameButtons, text=BUTTON_INITIALIZATION_DATABASE, command=initializationDatabase)
 
     # frameRecordTitle 프레임 위젯 정의
     recordTitle = []
@@ -325,6 +734,12 @@ def main():
     
 
 
+
+
+
+
+
+
 ## ============================================ 배치 ============================================ ##
 
     # 프레임 배치
@@ -334,8 +749,8 @@ def main():
 
     # frameButtons 프레임 위젯 배치
     buttonAdd.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
-    buttonDelete.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
     buttonReload.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
+    buttonInitialization.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
 
     # frameRecordTitle 프레임 위젯 배치
     for i in range(len(recordTitle)):
@@ -350,6 +765,10 @@ def main():
 
     # frameButtons 프레임 위젯 배치
     
+
+    # 초기 실행 함수
+    timeCheckAutoStartFunc()
+    loadRecordsFunc()
     window.mainloop()
 
 
@@ -357,6 +776,12 @@ def main():
 # pygame 오디오 재생 여부
 toplevelPlay = None
 play = None
+recordList = []
+nowPlaying = [] # [[primaryKey, number], [primaryKey, number], [primaryKey, number]]
+saveHour = 0
+saveMinute = 0
+saveSecond = 0
+saveWeek = 0
 
 # sql DB 및 테이블 생성, 존재 유무
 connect = sqlite3.connect("audiolist.db")
@@ -365,9 +790,10 @@ cursor = connect.cursor()
 cursor.execute('SELECT * from sqlite_master WHERE type="table" AND name="audiolisttable"')
 row = cursor.fetchall()
 if not row:
-    connect.execute('CREATE TABLE audiolisttable(id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT, name TEXT, vol INTEGER, mon INTEGER, tue INTEGER, wed INTEGER, thu INTEGER, fri INTEGER, hour INTEGER, minute INTEGER)') 
-
-connect.commit()
+    connect.execute('CREATE TABLE audiolisttable(id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT, name TEXT, vol INTEGER, mon INTEGER, tue INTEGER, wed INTEGER, thu INTEGER, fri INTEGER, hour INTEGER, minute INTEGER, second INTEGER)') 
+    connect.commit()
+    
+cursor.close()
 connect.close()
 
 if __name__=="__main__":

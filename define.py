@@ -1,14 +1,15 @@
 ## main ##
 TITLE = "AUtoDio"
 
-GEOMETRY = "1080x720"
+GEOMETRY = "1600x900"
 
 BUTTON_ADD = "추가"
 BUTTON_DELETE = "삭제"
 BUTTON_RELOAD = "새로고침"
+BUTTON_INITIALIZATION_DATABASE = "초기화"
 
-LABEL_RECORD_TITLE = ["번호", "파일명", "파일 경로", "볼륨", "요일", "시/분", "재생", "수정", "삭제"]
-LABEL_RECORD_TITLE_WIDTH = [5, 30, 60, 7, 10, 8, 7, 7, 7]
+LABEL_RECORD_TITLE = ["번호", "파일명", "파일 경로", "볼륨", "요일", "시/분/초", "재생", "수정", "삭제"]
+LABEL_RECORD_TITLE_WIDTH = [5, 50, 80, 8, 16, 10, 8, 8, 8]
 
 
 
@@ -37,7 +38,14 @@ CHECKBUTTON_FRI = "금"
 
 LABEL_TIME = "시간: "
 COMBOBOX_HOUR = list(range(24))
-LABEL_HOUR = "시"
+LABEL_HOUR = "시 "
 COMBOBOX_MINUTE = list(range(60))
-LABEL_MINUTE = "분"
+LABEL_MINUTE = "분 "
+COMBOBOX_SECOND = list(range(60))
+LABEL_SECOND = "초 "
 COMBOBOX_WIDTH = 3
+
+## toplevelModify ##
+MODIFY_GEOMETRY = "300x200"
+
+BUTTON_MODIFY = "수정"
