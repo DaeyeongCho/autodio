@@ -633,6 +633,12 @@ def main():
             play.stop()
 
     def reloadRecordFunc():
+        global easter
+        easter += 1
+        if easter == 10:
+            messagebox.showinfo("Easter Egg", "Hi, Jun!")
+        elif easter == 20:
+            messagebox.showinfo("Easter Egg", "Hi, Hyeok!")
         stopAllSound()
         initialization()
         loadRecordsFunc()
@@ -809,6 +815,7 @@ saveHour = 0
 saveMinute = 0
 saveSecond = 0
 saveWeek = 0
+easter = 0
 
 # sql DB 및 테이블 생성, 존재 유무
 connect = sqlite3.connect("audiolist.db")
