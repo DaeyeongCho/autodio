@@ -1,4 +1,7 @@
 __pycache__/
 .vscode/
 dummy/
+build/
+dist/
+AUtoDio.spec
 audiolist.db
