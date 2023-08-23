@@ -29,6 +29,7 @@ def main():
     ## toplevelAdd 윈도우 창 함수 ##
     def toplevelAddFunc():
         toplevelAdd = Toplevel(window)
+        toplevelAdd.title(TOPLEVER_ADD_TITLE)
         toplevelAdd.geometry(ADD_GEOMETRY)
         toplevelAdd.resizable(width=FALSE, height=FALSE)
 
@@ -271,6 +272,7 @@ def main():
     ## toplevelModify 윈도우 창 함수 ##
     def toplevelModifyFunc(primaryKey):
         toplevelModify = Toplevel(window)
+        toplevelModify.title(TOPLEVER_MODIFY_TITLE)
         toplevelModify.geometry(MODIFY_GEOMETRY)
         toplevelModify.resizable(width=FALSE, height=FALSE)
 

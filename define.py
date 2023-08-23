@@ -27,6 +27,8 @@ MENU_PROBLEM_INITIALIZATION = "초기화"
 
 
 ## toplevelAdd ##
+TOPLEVER_ADD_TITLE = "AUtoDio Add"
+
 ADD_GEOMETRY = "300x400"
 
 BUTTON_OPEN_FILE = "파일 열기"
@@ -60,6 +62,8 @@ FILE_NAME_WRAPLENGTH = 220
 
 
 ## toplevelModify ##
+TOPLEVER_MODIFY_TITLE = "AUtoDio Modify"
+
 MODIFY_GEOMETRY = "300x250"
 
 BUTTON_MODIFY = "수정"
