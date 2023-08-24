@@ -1,5 +1,7 @@
+VERSION = "Ver 0.3.0-beta"
+
 ## main ##
-TITLE = "AUtoDio Ver 0.2.1-beta"
+TITLE = "AUtoDio"
 
 GEOMETRY = "1600x900"
 
@@ -16,13 +18,24 @@ LABEL_RECORD_FILE_PATH_WRAPLENGTH = 500
 
 
 ## 메뉴 바 ##
-MENU_FLIE = "파일"
-MENU_FLIE_ADD = "추가"
-MENU_FLIE_EXIT = "끝내기"
+MENU_FILE = "파일"
+MENU_FILE_ADD = "추가"
+MENU_FILE_SORT = "순서 변경"
+MENU_FILE_EXIT = "끝내기"
+
+MENU_SORT = "정렬"
 
 MENU_PROBLEM = "문제 해결"
 MENU_PROBLEM_REROAD = "새로고침"
 MENU_PROBLEM_INITIALIZATION = "초기화"
+
+MENU_HELP = "도움말"
+MENU_HELP_INFO = "정보"
+
+
+
+## bind ##
+SORT_MODE = ["등록순", "시간순", "이름순"]
 
 
 
@@ -54,6 +67,7 @@ COMBOBOX_MINUTE = list(range(60))
 LABEL_MINUTE = "분 "
 COMBOBOX_SECOND = list(range(60))
 LABEL_SECOND = "초 "
+BUTTON_NOW_TIME = "현재 시간"
 COMBOBOX_WIDTH = 3
 
 FILE_NAME_TITLE_WIDTH = 9

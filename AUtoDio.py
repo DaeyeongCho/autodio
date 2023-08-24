@@ -14,7 +14,7 @@ from define import *
 
 def main():
     window = Tk()
-    window.title(TITLE)
+    window.title(TITLE + " " + VERSION)
     window.geometry(GEOMETRY)
     window.resizable(width=FALSE, height=FALSE)
     path = os.path.join(os.path.dirname(__file__), 'icon.ico')
@@ -22,6 +22,12 @@ def main():
         window.iconbitmap(path)
     pygame.init()
     pygame.mixer.init()
+
+    # X버튼 클릭 시
+    def exitWindowX():
+        exitProgram()
+
+    window.protocol('WM_DELETE_WINDOW', exitWindowX)
 
 
 ## ============================================ toplevelAdd 함수 ============================================ ##
@@ -145,15 +151,20 @@ def main():
             if toplevelPlay.get_num_channels() > 0:
                 toplevelPlay.set_volume(addVolumeSize)
 
+        def addSetNowTimeFunc():
+            addGetTime = str(datetime.datetime.now())
+            addTimeList = addGetTime.split(" ")
+            addTimeList = addTimeList[1].split(".")
+            addTimeList = addTimeList[0].split(":")
+
+            strVarAddComboboxHour.set(addTimeList[0])
+            strVarAddComboboxMinute.set(addTimeList[1])
+            strVarAddComboboxSecond.set(addTimeList[2])
+
 
         ## ===== toplevelAdd 정의 ===== ##
 
         # 타입
-        addGetTime = str(datetime.datetime.now())
-        addTimeList = addGetTime.split(" ")
-        addTimeList = addTimeList[1].split(".")
-        addTimeList = addTimeList[0].split(":")
-
         strVarAddLabelFilePath = StringVar()
         strVarAddLabelFilePath.set("")
         strVarAddLabelFileName = StringVar()
@@ -174,11 +185,11 @@ def main():
         boolVarAddCheckboxFri.set(True)
 
         strVarAddComboboxHour = StringVar()
-        strVarAddComboboxHour.set(addTimeList[0])
+        strVarAddComboboxHour.set(12)
         strVarAddComboboxMinute = StringVar()
-        strVarAddComboboxMinute.set(addTimeList[1])
+        strVarAddComboboxMinute.set(00)
         strVarAddComboboxSecond = StringVar()
-        strVarAddComboboxSecond.set(addTimeList[2])
+        strVarAddComboboxSecond.set(00)
 
         # 프레임
         addFrameFilePath = Frame(toplevelAdd)
@@ -187,6 +198,7 @@ def main():
         addFrameVolume = Frame(toplevelAdd)
         addFrameWeek = Frame(toplevelAdd)
         addFrameTime = Frame(toplevelAdd)
+        addFrameSetNowTime = Frame(toplevelAdd)
         addFrameAdd = Frame(toplevelAdd)
         
         #위젯
@@ -217,6 +229,8 @@ def main():
         addComboboxSecond = Combobox(addFrameTime, width=COMBOBOX_WIDTH, textvariable=strVarAddComboboxSecond, values=COMBOBOX_SECOND)
         addLabelSecond = Label(addFrameTime, text=LABEL_SECOND)
 
+        addSetNowTime = Button(addFrameSetNowTime, text=BUTTON_NOW_TIME, command=addSetNowTimeFunc)
+
         addButtonAdd = Button(addFrameAdd, text=BUTTON_ADD, state="disable", command=addFileAddFunc)
 
 
@@ -227,6 +241,7 @@ def main():
         addFrameVolume.pack(side=TOP, pady=10)
         addFrameWeek.pack(side=TOP, pady=10)
         addFrameTime.pack(side=TOP, pady=10)
+        addFrameSetNowTime.pack(side=TOP)
         addFrameAdd.pack(side=BOTTOM, pady=(0, 20))
 
         addLabelFilePath.pack(side=LEFT)
@@ -255,6 +270,8 @@ def main():
         addLabelMinute.pack(side=LEFT)
         addComboboxSecond.pack(side=LEFT)
         addLabelSecond.pack(side=LEFT)
+
+        addSetNowTime.pack()
 
         addButtonAdd.pack()
 
@@ -386,6 +403,16 @@ def main():
             toplevelModify.destroy()
             reloadRecordFunc()
 
+        def modifySetNowTimeFunc():
+            modifyGetTime = str(datetime.datetime.now())
+            modifyTimeList = modifyGetTime.split(" ")
+            modifyTimeList = modifyTimeList[1].split(".")
+            modifyTimeList = modifyTimeList[0].split(":")
+
+            strVarModifyComboboxHour.set(modifyTimeList[0])
+            strVarModifyComboboxMinute.set(modifyTimeList[1])
+            strVarModifyComboboxSecond.set(modifyTimeList[2])
+
 
         ## ===== toplevelModify 정의 ===== ##
         
@@ -417,6 +444,7 @@ def main():
         modifyFrameWeek = Frame(toplevelModify)
         modifyFrameTime = Frame(toplevelModify)
         modifyFrameModify = Frame(toplevelModify)
+        modifyFrameSetNowTime = Frame(toplevelModify)
 
         # modifyFrameFileName
         modifyLabelFileNameText = Label(modifyFrameFileName, text=LABEL_FILE_NAME, width=FILE_NAME_TITLE_WIDTH, anchor="e")
@@ -444,6 +472,8 @@ def main():
         modifyComboboxSecond = Combobox(modifyFrameTime, width=COMBOBOX_WIDTH, textvariable=strVarModifyComboboxSecond, values=COMBOBOX_SECOND)
         modifyLabelSecond = Label(modifyFrameTime, text=LABEL_SECOND)
 
+        modifySetNowTime = Button(modifyFrameSetNowTime, text=BUTTON_NOW_TIME, command=modifySetNowTimeFunc)
+
         modifyButtonModify = Button(modifyFrameModify, text=BUTTON_MODIFY, command=modifyFileModifyFunc)
 
 
@@ -454,6 +484,7 @@ def main():
         modifyFrameVolume.pack(side=TOP, pady=5)
         modifyFrameWeek.pack(side=TOP, pady=5)
         modifyFrameTime.pack(side=TOP, pady=5)
+        modifyFrameSetNowTime.pack(side=TOP)
         modifyFrameModify.pack(side=BOTTOM, pady=(0, 20))
 
         # modifyFrameFileName
@@ -482,6 +513,8 @@ def main():
         modifyComboboxSecond.pack(side=LEFT)
         modifyLabelSecond.pack(side=LEFT)
 
+        modifySetNowTime.pack()
+
         modifyButtonModify.pack()
 
 
@@ -507,7 +540,14 @@ def main():
         connect = sqlite3.connect("audiolist.db")
         cursor = connect.cursor()
         
-        cursor.execute('SELECT * from audiolisttable')
+        if sortMode == 0:
+            cursor.execute('SELECT * from audiolisttable')
+        elif sortMode == 1:
+            cursor.execute('SELECT * from audiolisttable ORDER BY hour, minute, second')
+        elif sortMode == 2:
+            cursor.execute('SELECT * from audiolisttable ORDER BY name, id')
+
+
         for rows in cursor:
             number += 1
             weeks = ""
@@ -635,12 +675,6 @@ def main():
             play.stop()
 
     def reloadRecordFunc():
-        global easter
-        easter += 1
-        if easter == 10:
-            messagebox.showinfo("Easter Egg", "Hi, Jun!")
-        elif easter == 20:
-            messagebox.showinfo("Easter Egg", "Hi, Hyeok!")
         stopAllSound()
         initialization()
         loadRecordsFunc()
@@ -725,15 +759,109 @@ def main():
 
         window.after(400, timeCheckAutoStartFunc)
 
+    def buttonSortFunc():
+        global sortMode
+
+        if sortMode == 0:
+            sortTime()
+
+        elif sortMode == 1:
+            sortName()
+
+        elif sortMode == 2:
+            sortID()
+
+    def sortID():
+        global sortMode
+
+        sortMode = 0
+        bindFile = open("bind.txt", "r")
+        binds = bindFile.readlines()
+        bindFile.close()
+        for i in range(len(binds)):
+            oneBindSplit = bind[i].split(" ")
+            oneBindSplit[0] == "sort_mode"
+            bind[i] = "sort_mode 0"
+        bindFile = open("bind.txt", "w")
+        for oneBind in bind:
+            bindFile.write(oneBind)
+        bindFile.close()
+        buttonSort.configure(text=SORT_MODE[0])
+
+        intVarMenuSort.set(0)
+
+        reloadRecordFunc()
+
+    def sortTime():
+        global sortMode
+
+        sortMode = 1
+        bindFile = open("bind.txt", "r")
+        binds = bindFile.readlines()
+        bindFile.close()
+        for i in range(len(binds)):
+            oneBindSplit = bind[i].split(" ")
+            oneBindSplit[0] == "sort_mode"
+            bind[i] = "sort_mode 1"
+        bindFile = open("bind.txt", "w")
+        for oneBind in bind:
+            bindFile.write(oneBind)
+        bindFile.close()
+        buttonSort.configure(text=SORT_MODE[1])
+
+        intVarMenuSort.set(1)
+
+        reloadRecordFunc()
+
+    def sortName():
+        global sortMode
+
+        sortMode = 2
+        bindFile = open("bind.txt", "r")
+        binds = bindFile.readlines()
+        bindFile.close()
+        for i in range(len(binds)):
+            oneBindSplit = bind[i].split(" ")
+            oneBindSplit[0] == "sort_mode"
+            bind[i] = "sort_mode 2"
+        bindFile = open("bind.txt", "w")
+        for oneBind in bind:
+            bindFile.write(oneBind)
+        bindFile.close()
+        buttonSort.configure(text=SORT_MODE[2])
+
+        intVarMenuSort.set(2)
+
+        reloadRecordFunc()
+
+    def menuHelpInfoFunc():
+        messagebox.showinfo("정보", f"""
+버전: {VERSION}
+OS: Windows
+Dev Tools: Python, SQLite
+제작: 조대영
+                                    """)
+
+
+
+
+
+
+
+
 
 ## ============================================ 정의 ============================================ ##
 
     # 타입 정의
+    intVarMenuSort = IntVar()
+    intVarMenuSort.set(sortMode)
 
     # 메뉴 바 정의
     menubar = Menu(window)
     menuFile = Menu(menubar, tearoff=0)
+    menuSort = Menu(menubar, tearoff=0)
     menuProblem = Menu(menubar, tearoff=0)
+    menuHelp = Menu(menubar, tearoff=0)
 
     # 프레임 정의
     frameRecordTitle = Frame(window)
@@ -758,6 +886,7 @@ def main():
     # frameButtons 프레임 위젯 정의
     buttonAdd = Button(frameButtons, text=BUTTON_ADD, command=toplevelAddFunc)
     buttonReload = Button(frameButtons, text=BUTTON_RELOAD, command=reloadRecordFunc)
+    buttonSort = Button(frameButtons, text=SORT_MODE[sortMode], command=buttonSortFunc)
     buttonExit = Button(frameButtons, text=BUTTON_EXIT, command=exitProgram)
 
 
@@ -766,14 +895,22 @@ def main():
 ## ============================================ 배치 ============================================ ##
 
     # 메뉴바 배치
-    menuFile.add_command(label=MENU_FLIE_ADD, command=toplevelAddFunc)
+    menuFile.add_command(label=MENU_FILE_ADD, command=toplevelAddFunc)
     menuFile.add_separator()
-    menuFile.add_command(label=MENU_FLIE_EXIT, command=exitProgram)
-    menubar.add_cascade(label=MENU_FLIE, menu=menuFile)
+    menuFile.add_command(label=MENU_FILE_EXIT, command=exitProgram)
+    menubar.add_cascade(label=MENU_FILE, menu=menuFile)
+
+    menuSort.add_radiobutton(label=SORT_MODE[0], variable=intVarMenuSort, value=0, command=sortID)
+    menuSort.add_radiobutton(label=SORT_MODE[1], variable=intVarMenuSort, value=1, command=sortTime)
+    menuSort.add_radiobutton(label=SORT_MODE[2], variable=intVarMenuSort, value=2, command=sortName)
+    menubar.add_cascade(label=MENU_SORT, menu=menuSort)
 
     menuProblem.add_command(label=MENU_PROBLEM_REROAD, command=reloadRecordFunc)
     menuProblem.add_command(label=MENU_PROBLEM_INITIALIZATION, command=initializationDatabase)
     menubar.add_cascade(label=MENU_PROBLEM, menu=menuProblem)
+
+    menuHelp.add_command(label=MENU_HELP_INFO, command=menuHelpInfoFunc)
+    menubar.add_cascade(label=MENU_HELP, menu=menuHelp)
 
     # 프레임 배치
     frameRecordTitle.pack(side=TOP, pady=(20, 0))
@@ -793,6 +930,7 @@ def main():
     # frameButtons 프레임 위젯 배치
     buttonAdd.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
     buttonReload.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
+    buttonSort.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
     buttonExit.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
     
 
@@ -817,7 +955,30 @@ saveHour = 0
 saveMinute = 0
 saveSecond = 0
 saveWeek = 0
-easter = 0
+
+bindFile = None
+bind = []
+sortMode = 0 # 0: 등록 순  1: 시간 순
+
+path = os.path.join(os.path.dirname(__file__), 'bind.txt')
+if not os.path.isfile(path):
+    bindInitFile = open("./bind_initialization.txt", "r")
+    bindInit = bindInitFile.read()
+    bindInitFile.close()
+
+    bindFile = open("./bind.txt", "w")
+    bindFile.write(bindInit)
+    bindFile.close()
+
+bindFile = open("./bind.txt", "r")
+bind = bindFile.readlines()
+bindFile.close()
+
+for bindOneLine in bind:
+    bindNameAndSet = bindOneLine.split(" ")
+    if bindNameAndSet[0] == "sort_mode":
+        sortMode = int(bindNameAndSet[1])
+
 
 # sql DB 및 테이블 생성, 존재 유무
 connect = sqlite3.connect("audiolist.db")
