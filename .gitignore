@@ -5,3 +5,4 @@ build/
 dist/
 AUtoDio.spec
 audiolist.db
+bind.txt
