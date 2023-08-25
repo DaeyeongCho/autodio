@@ -6,3 +6,4 @@ dist/
 AUtoDio.spec
 audiolist.db
 bind.txt
+test.py

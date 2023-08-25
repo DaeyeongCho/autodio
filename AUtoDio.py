@@ -5,7 +5,9 @@ from tkinter import messagebox
 from tkinter.ttk import *
 import sqlite3
 import pygame
+import os
 import os.path
+import winshell
 
 from define import *
 
@@ -98,7 +100,8 @@ def main():
             addMinute = int(strVarAddComboboxMinute.get())
             addSecond = int(strVarAddComboboxSecond.get())
 
-            connect = sqlite3.connect("audiolist.db")
+            path = os.path.join(os.path.dirname(__file__), 'audiolist.db')
+            connect = sqlite3.connect(path)
             cursor = connect.cursor()
 
             cursor.execute("INSERT INTO audiolisttable (path, name, vol, mon, tue, wed, thu, fri, hour, minute, second) Values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", (addFilePath, addFileName, addVolume, addMon, addTue, addWed, addThu, addFri, addHour, addMinute, addSecond))
@@ -293,7 +296,8 @@ def main():
         toplevelModify.geometry(MODIFY_GEOMETRY)
         toplevelModify.resizable(width=FALSE, height=FALSE)
 
-        connect = sqlite3.connect("audiolist.db")
+        path = os.path.join(os.path.dirname(__file__), 'audiolist.db')
+        connect = sqlite3.connect(path)
         cursor = connect.cursor()
 
         cursor.execute('SELECT * from audiolisttable where id=?', (primaryKey, ))
@@ -377,7 +381,8 @@ def main():
             modifyMinute = int(strVarModifyComboboxMinute.get())
             modifySecond = int(strVarModifyComboboxSecond.get())
 
-            connect = sqlite3.connect("audiolist.db")
+            path = os.path.join(os.path.dirname(__file__), 'audiolist.db')
+            connect = sqlite3.connect(path)
             cursor = connect.cursor()
 
             cursor.execute("UPDATE 'audiolisttable' SET vol = ? WHERE id = ?", (modifyVolume, primaryKey))
@@ -532,12 +537,21 @@ def main():
             window.quit()
             window.destroy()
 
+    def menuHelpInfoFunc():
+        messagebox.showinfo("정보", f"""
+버전: {VERSION}
+OS: Windows
+Dev Tools: Python, SQLite
+제작: 조대영
+                                    """)
+
     def loadRecordsFunc():
         global recordList
         number = 0
         weeks = ""
 
-        connect = sqlite3.connect("audiolist.db")
+        path = os.path.join(os.path.dirname(__file__), 'audiolist.db')
+        connect = sqlite3.connect(path)
         cursor = connect.cursor()
         
         if sortMode == 0:
@@ -607,7 +621,8 @@ def main():
             for i in nowPlaying:
                 stopSoundFunc(i[0], i[1])
 
-        connect = sqlite3.connect("audiolist.db")
+        path = os.path.join(os.path.dirname(__file__), 'audiolist.db')
+        connect = sqlite3.connect(path)
         cursor = connect.cursor()
 
         cursor.execute('SELECT * from audiolisttable where id=?', (primaryKey, ))
@@ -683,7 +698,8 @@ def main():
         deleteAnswer = messagebox.showwarning("경고!", "정말 삭제하시겠습니까?")
 
         if deleteAnswer:
-            connect = sqlite3.connect("audiolist.db")
+            path = os.path.join(os.path.dirname(__file__), 'audiolist.db')
+            connect = sqlite3.connect(path)
             cursor = connect.cursor()
 
             cursor.execute('DELETE FROM "audiolisttable" WHERE id=?', (primaryKey, ))
@@ -700,7 +716,8 @@ def main():
         if initializationAnswer:
             initializationReanswer = messagebox.askokcancel("경고!", "되돌릴 수 없습니다. 정말 '초기화'하시겠습니까?")
             if initializationReanswer:
-                connect = sqlite3.connect("audiolist.db")
+                path = os.path.join(os.path.dirname(__file__), 'audiolist.db')
+                connect = sqlite3.connect(path)
                 cursor = connect.cursor()
 
                 cursor.execute('DROP TABLE "audiolisttable"')
@@ -743,7 +760,8 @@ def main():
             saveSecond = nowSecond
             saveWeek = getWeek
 
-            connect = sqlite3.connect("audiolist.db")
+            path = os.path.join(os.path.dirname(__file__), 'audiolist.db')
+            connect = sqlite3.connect(path)
             cursor = connect.cursor()
 
             cursor.execute('SELECT * FROM "audiolisttable" where hour=? AND minute=? AND second=?', (timeList[0], timeList[1], timeList[2]))
@@ -779,11 +797,11 @@ def main():
         binds = bindFile.readlines()
         bindFile.close()
         for i in range(len(binds)):
-            oneBindSplit = bind[i].split(" ")
-            oneBindSplit[0] == "sort_mode"
-            bind[i] = "sort_mode 0"
+            oneBindSplit = binds[i].split(" ")
+            if oneBindSplit[0] == "sort_mode":
+                binds[i] = "sort_mode 0\n"
         bindFile = open("bind.txt", "w")
-        for oneBind in bind:
+        for oneBind in binds:
             bindFile.write(oneBind)
         bindFile.close()
         buttonSort.configure(text=SORT_MODE[0])
@@ -800,11 +818,11 @@ def main():
         binds = bindFile.readlines()
         bindFile.close()
         for i in range(len(binds)):
-            oneBindSplit = bind[i].split(" ")
-            oneBindSplit[0] == "sort_mode"
-            bind[i] = "sort_mode 1"
+            oneBindSplit = binds[i].split(" ")
+            if oneBindSplit[0] == "sort_mode":
+                binds[i] = "sort_mode 1\n"
         bindFile = open("bind.txt", "w")
-        for oneBind in bind:
+        for oneBind in binds:
             bindFile.write(oneBind)
         bindFile.close()
         buttonSort.configure(text=SORT_MODE[1])
@@ -821,11 +839,11 @@ def main():
         binds = bindFile.readlines()
         bindFile.close()
         for i in range(len(binds)):
-            oneBindSplit = bind[i].split(" ")
-            oneBindSplit[0] == "sort_mode"
-            bind[i] = "sort_mode 2"
+            oneBindSplit = binds[i].split(" ")
+            if oneBindSplit[0] == "sort_mode":
+                binds[i] = "sort_mode 2\n"
         bindFile = open("bind.txt", "w")
-        for oneBind in bind:
+        for oneBind in binds:
             bindFile.write(oneBind)
         bindFile.close()
         buttonSort.configure(text=SORT_MODE[2])
@@ -834,17 +852,33 @@ def main():
 
         reloadRecordFunc()
 
-    def menuHelpInfoFunc():
-        messagebox.showinfo("정보", f"""
-버전: {VERSION}
-OS: Windows
-Dev Tools: Python, SQLite
-제작: 조대영
-                                    """)
+    def startProgramAddFunc():
+        startupFolder = winshell.startup()
+        thisEXEPath = os.path.join(os.path.dirname(__file__), 'AUtoDio.exe')
+        shortcutPath = os.path.join(startupFolder, "AUtoDio.lnk")
+        if boolVarMenuSettingStartProg.get():
+            if os.path.exists(thisEXEPath) and (not os.path.exists(shortcutPath)):
+                winshell.CreateShortcut(
+                    Path=shortcutPath,
+                    Target=thisEXEPath,
+                    Icon=(thisEXEPath, 0),
+                    Description="AUtoDio shortcut"
+                )
+        else:
+            if os.path.exists(shortcutPath):
+                os.remove(shortcutPath)
 
-
-
-
+        bindFile = open("bind.txt", "r")
+        binds = bindFile.readlines()
+        bindFile.close()
+        for i in range(len(binds)):
+            oneBindSplit = binds[i].split(" ")
+            if oneBindSplit[0] == "set_start":
+                binds[i] = "set_start " + str(int(boolVarMenuSettingStartProg.get()))
+        bindFile = open("bind.txt", "w")
+        for oneBind in binds:
+            bindFile.write(oneBind)
+        bindFile.close()
 
 
 
@@ -855,11 +889,14 @@ Dev Tools: Python, SQLite
     # 타입 정의
     intVarMenuSort = IntVar()
     intVarMenuSort.set(sortMode)
+    boolVarMenuSettingStartProg = BooleanVar()
+    boolVarMenuSettingStartProg.set(startProgram)
 
     # 메뉴 바 정의
     menubar = Menu(window)
     menuFile = Menu(menubar, tearoff=0)
     menuSort = Menu(menubar, tearoff=0)
+    menuSetting = Menu(menubar, tearoff=0)
     menuProblem = Menu(menubar, tearoff=0)
     menuHelp = Menu(menubar, tearoff=0)
 
@@ -905,6 +942,9 @@ Dev Tools: Python, SQLite
     menuSort.add_radiobutton(label=SORT_MODE[2], variable=intVarMenuSort, value=2, command=sortName)
     menubar.add_cascade(label=MENU_SORT, menu=menuSort)
 
+    menuSetting.add_checkbutton(label=MENU_SETTING_STARTPROG, variable=boolVarMenuSettingStartProg, command=startProgramAddFunc)
+    menubar.add_cascade(label=MENU_SETTING, menu=menuSetting)
+
     menuProblem.add_command(label=MENU_PROBLEM_REROAD, command=reloadRecordFunc)
     menuProblem.add_command(label=MENU_PROBLEM_INITIALIZATION, command=initializationDatabase)
     menubar.add_cascade(label=MENU_PROBLEM, menu=menuProblem)
@@ -933,10 +973,6 @@ Dev Tools: Python, SQLite
     buttonSort.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
     buttonExit.pack(side=LEFT, padx=10, pady=5, ipadx=15, ipady=3)
     
-
-
-    
-
     # 초기 실행 함수
     timeCheckAutoStartFunc()
     loadRecordsFunc()
@@ -959,29 +995,37 @@ saveWeek = 0
 bindFile = None
 bind = []
 sortMode = 0 # 0: 등록 순  1: 시간 순
+startProgram = False
 
 path = os.path.join(os.path.dirname(__file__), 'bind.txt')
 if not os.path.isfile(path):
-    bindInitFile = open("./bind_initialization.txt", "r")
+    path = os.path.join(os.path.dirname(__file__), 'bind_initialization.txt')
+    bindInitFile = open(path, "r")
     bindInit = bindInitFile.read()
     bindInitFile.close()
 
-    bindFile = open("./bind.txt", "w")
+    path = os.path.join(os.path.dirname(__file__), 'bind.txt')
+    bindFile = open(path, "w")
     bindFile.write(bindInit)
     bindFile.close()
 
-bindFile = open("./bind.txt", "r")
-bind = bindFile.readlines()
-bindFile.close()
+path = os.path.join(os.path.dirname(__file__), 'bind.txt')
+if os.path.isfile(path):
+    bindFile = open(path, "r")
+    bind = bindFile.readlines()
+    bindFile.close()
 
 for bindOneLine in bind:
     bindNameAndSet = bindOneLine.split(" ")
     if bindNameAndSet[0] == "sort_mode":
         sortMode = int(bindNameAndSet[1])
+    if bindNameAndSet[0] == "set_start":
+        startProgram = bool(int(bindNameAndSet[1]))
 
 
 # sql DB 및 테이블 생성, 존재 유무
-connect = sqlite3.connect("audiolist.db")
+path = os.path.join(os.path.dirname(__file__), 'audiolist.db')
+connect = sqlite3.connect(path)
 cursor = connect.cursor()
 
 cursor.execute('SELECT * from sqlite_master WHERE type="table" AND name="audiolisttable"')
