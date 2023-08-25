@@ -1,4 +1,4 @@
-VERSION = "Ver 0.3.0-beta"
+VERSION = "Ver 0.4.0-beta"
 
 ## main ##
 TITLE = "AUtoDio"
